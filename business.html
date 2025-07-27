@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business & Economics Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .option-btn-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .option-btn {
+            transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
+            border: 2px solid #d1d5db; /* border-gray-300 */
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #9ca3af; /* border-gray-400 */
+        }
+        .option-btn.correct {
+            background-color: #dcfce7; /* bg-green-100 */
+            color: #15803d; /* text-green-700 */
+            border-color: #16a34a; /* border-green-500 */
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2; /* bg-red-100 */
+            color: #b91c1c; /* text-red-700 */
+            border-color: #ef4444; /* border-red-400 */
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        .feedback-text {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin-top: 0.5rem;
+        }
+        .status-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .status-label.correct {
+            color: #15803d; /* text-green-700 */
+        }
+        .status-label.incorrect {
+            color: #b91c1c; /* text-red-700 */
+        }
+        .explanation-text {
+            font-size: 0.875rem;
+            color: #4b5563; /* text-gray-600 */
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="quiz-container" class="quiz-container bg-white">
+        <div id="start-screen">
+            <h1 class="text-3xl font-bold text-center mb-4 text-gray-900">Business & Economics Quiz</h1>
+            <p class="text-center text-gray-600 mb-8">Test your knowledge with 50 questions covering key business and economic concepts.</p>
+            <div class="text-center">
+                <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md">Start Quiz</button>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                 <div class="flex justify-between items-center mb-2">
+                    <span id="question-counter" class="text-sm font-medium text-gray-600">Question 1/50</span>
+                    <span id="score-display" class="text-sm font-medium text-blue-600">Score: 0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 2%"></div>
+                </div>
+            </div>
+
+            <!-- Question and Options -->
+            <div id="question-area">
+                <h2 id="question-text" class="text-2xl font-semibold mb-6 text-gray-800"></h2>
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="mt-8 flex justify-end">
+                <button id="next-btn" class="bg-gray-800 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-900 transition-colors duration-300 shadow-md hidden">Next</button>
+            </div>
+        </div>
+
+        <div id="results-screen" class="hidden text-center">
+            <h1 class="text-3xl font-bold mb-4 text-gray-900">Quiz Complete!</h1>
+            <p class="text-xl text-gray-600 mb-2">Your Final Score:</p>
+            <p id="final-score" class="text-5xl font-bold text-blue-600 mb-6"></p>
+            <p id="score-message" class="text-lg text-gray-700 mb-8"></p>
+            <button id="restart-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Microeconomics
+            { question: "What fundamental economic principle states that, all else being equal, as the price of a good increases, the quantity demanded will decrease?", answer: "Law of Demand", options: [ { text: "Law of Supply", explanation: "This law states the opposite: as price increases, the quantity producers are willing to supply increases." }, { text: "Law of Demand", explanation: "Correct. This law describes the inverse relationship between price and quantity demanded." }, { text: "Law of Diminishing Returns", explanation: "This production principle states that adding more of one input will eventually yield smaller increases in output." }, { text: "Say's Law", explanation: "This macroeconomic theory suggests that supply creates its own demand, which is a different concept." } ] },
+            { question: "The point where the supply and demand curves intersect is known as the:", answer: "Equilibrium Price", options: [ { text: "Price Ceiling", explanation: "A price ceiling is a government-imposed maximum price, not a natural market outcome." }, { text: "Price Floor", explanation: "A price floor is a government-imposed minimum price, which can lead to surpluses." }, { text: "Equilibrium Price", explanation: "Correct. This is the market-clearing price where quantity supplied equals quantity demanded." }, { text: "Break-Even Point", explanation: "This is a business term where total costs equal total revenue, resulting in zero profit." } ] },
+            { question: "If a small change in price leads to a large change in quantity demanded, the demand for the product is considered:", answer: "Elastic", options: [ { text: "Inelastic", explanation: "Inelastic demand means quantity changes very little when price changes (e.g., gasoline)." }, { text: "Unitary", explanation: "Unitary elastic demand means a change in price causes an equal proportional change in quantity." }, { text: "Perfectly Inelastic", explanation: "Perfectly inelastic demand means quantity does not change at all, regardless of price (e.g., life-saving medicine)." }, { text: "Elastic", explanation: "Correct. Elastic demand is highly responsive to price changes, often seen with luxury goods." } ] },
+            { question: "What is the term for the value of the next-best alternative that must be forgone to pursue a certain action?", answer: "Opportunity Cost", options: [ { text: "Sunk Cost", explanation: "A sunk cost is money that has already been spent and cannot be recovered, so it shouldn't influence future decisions." }, { text: "Marginal Cost", explanation: "This is the cost of producing one additional unit of a good." }, { text: "Opportunity Cost", explanation: "Correct. It's the cost of the opportunity you gave up by making a particular choice." }, { text: "Accounting Cost", explanation: "This refers to the explicit monetary costs recorded in bookkeeping." } ] },
+            { question: "A market structure with many sellers offering identical products is known as:", answer: "Perfect Competition", options: [ { text: "Monopoly", explanation: "A monopoly is the opposite, with only one seller in the market." }, { text: "Oligopoly", explanation: "An oligopoly has a few large sellers, not many small ones." }, { text: "Perfect Competition", explanation: "Correct. In this structure, no single firm can influence the market price." }, { text: "Monopolistic Competition", explanation: "This structure has many sellers, but their products are differentiated, not identical." } ] },
+            { question: "Which market structure is characterized by a single seller dominating the market?", answer: "Monopoly", options: [ { text: "Oligopoly", explanation: "An oligopoly involves a few dominant firms, not just one." }, { text: "Perfect Competition", explanation: "Perfect competition has many sellers, making it the opposite of a monopoly." }, { text: "Monopolistic Competition", explanation: "This involves many sellers with differentiated products, allowing for some price control but not dominance." }, { text: "Monopoly", explanation: "Correct. A single seller with high barriers to entry defines a monopoly." } ] },
+            { question: "The additional cost incurred from producing one more unit of a good or service is called:", answer: "Marginal Cost", options: [ { text: "Average Cost", explanation: "Average cost is the total cost divided by the number of units produced." }, { text: "Fixed Cost", explanation: "Fixed costs do not change with the level of production (e.g., rent)." }, { text: "Marginal Cost", explanation: "Correct. It's the cost of the 'next' one. Crucial for production decisions." }, { text: "Total Cost", explanation: "Total cost is the sum of all fixed and variable costs." } ] },
+            { question: "In economics, the satisfaction or benefit derived from consuming a product is referred to as:", answer: "Utility", options: [ { text: "Profit", explanation: "Profit is a financial gain (revenue minus costs), not a measure of consumer satisfaction." }, { text: "Revenue", explanation: "Revenue is the total income generated from sales, before expenses." }, { text: "Utility", explanation: "Correct. Utility is the economic term for satisfaction or happiness from consumption." }, { text: "Value", explanation: "While related, value is often expressed in monetary terms; utility is a more abstract measure of satisfaction." } ] },
+            { question: "A market dominated by a small number of large sellers is a(n):", answer: "Oligopoly", options: [ { text: "Monopoly", explanation: "A monopoly is a market with only one seller." }, { text: "Oligopoly", explanation: "Correct. Think of industries like airlines or mobile carriers." }, { text: "Perfect Competition", explanation: "Perfect competition involves a very large number of small sellers." }, { text: "Free Market", explanation: "A free market is a broader system with minimal government intervention, not a specific market structure." } ] },
+            { question: "A government-imposed maximum price that can be charged for a good or service is a:", answer: "Price Ceiling", options: [ { text: "Price Floor", explanation: "A price floor is a minimum price, like minimum wage. It can cause surpluses." }, { text: "Subsidy", explanation: "A subsidy is a payment from the government to encourage production or consumption." }, { text: "Price Ceiling", explanation: "Correct. Rent control is a common example. It can cause shortages." }, { text: "Quota", explanation: "A quota is a limit on the quantity of a good that can be produced or imported." } ] },
+            { question: "What does GDP stand for?", answer: "Gross Domestic Product", options: [ { text: "Gross Domestic Product", explanation: "Correct. It's the total market value of all final goods and services produced in a country." }, { text: "General Development Plan", explanation: "This is a term for a strategic plan, not a primary economic indicator." }, { text: "Global Depreciation Percentage", explanation: "This is not a standard economic term." }, { text: "Gross Domestic Profit", explanation: "GDP measures production, not profit. Profit is revenue minus costs." } ] },
+            { question: "The measure of inflation calculated by tracking the price of a basket of consumer goods and services is the:", answer: "Consumer Price Index (CPI)", options: [ { text: "Producer Price Index (PPI)", explanation: "The PPI tracks inflation from the perspective of producers, measuring changes in selling prices." }, { text: "Gross Domestic Product (GDP)", explanation: "GDP measures economic output, not inflation directly, though the 'GDP deflator' is an inflation measure." }, { text: "Consumer Price Index (CPI)", explanation: "Correct. The CPI measures the average change in prices paid by urban consumers for a market basket of goods." }, { text: "Human Development Index (HDI)", explanation: "HDI is a composite statistic of life expectancy, education, and per capita income indicators." } ] },
+            { question: "Actions by a central bank to manipulate the money supply and credit conditions to stimulate or restrain economic activity are known as:", answer: "Monetary Policy", options: [ { text: "Fiscal Policy", explanation: "Fiscal policy involves government spending and taxation, controlled by the government, not the central bank." }, { text: "Trade Policy", explanation: "This relates to tariffs, trade agreements, and other rules governing international trade." }, { text: "Monetary Policy", explanation: "Correct. This is the primary role of a central bank, using tools like interest rates." }, { text: "Industrial Policy", explanation: "This is a government strategy to encourage the development of certain sectors of the economy." } ] },
+            { question: "The use of government spending and taxation to influence the economy is called:", answer: "Fiscal Policy", options: [ { text: "Monetary Policy", explanation: "Monetary policy is controlled by the central bank and involves the money supply and interest rates." }, { text: "Fiscal Policy", explanation: "Correct. This is a tool used by the government (e.g., Congress in the U.S.) to manage the economy." }, { text: "Supply-Side Policy", explanation: "This focuses on increasing aggregate supply, often through deregulation and tax cuts for producers." }, { text: "Free Market Policy", explanation: "This is a general approach of minimal government intervention, not a specific tool." } ] },
+            { question: "A period of temporary economic decline during which trade and industrial activity are reduced is called a:", answer: "Recession", options: [ { text: "Boom", explanation: "A boom is a period of rapid economic expansion, the opposite of a recession." }, { text: "Expansion", explanation: "Expansion is the phase of the business cycle where the economy is growing." }, { text: "Recession", explanation: "Correct. It's formally defined as a significant decline in economic activity across the economy." }, { text: "Peak", explanation: "The peak is the highest point of the business cycle, just before a recession begins." } ] },
+            { question: "A situation of high inflation combined with high unemployment and stagnant demand in a country's economy is known as:", answer: "Stagflation", options: [ { text: "Deflation", explanation: "Deflation is a decrease in the general price level of goods and services." }, { text: "Hyperinflation", explanation: "Hyperinflation is extremely rapid or out-of-control inflation." }, { text: "Depression", explanation: "A depression is a severe and prolonged recession." }, { text: "Stagflation", explanation: "Correct. A portmanteau of 'stagnation' and 'inflation', it's a difficult economic problem to solve." } ] },
+            { question: "The total demand for goods and services within a particular market is:", answer: "Aggregate Demand", options: [ { text: "Aggregate Supply", explanation: "Aggregate supply is the total amount of goods and services that firms are willing to sell." }, { text: "Market Equilibrium", explanation: "This is the point where aggregate demand and aggregate supply are equal." }, { text: "Aggregate Demand", explanation: "Correct. It represents the total demand for all goods and services in an economy." }, { text: "Total Output", explanation: "Total output is another term for aggregate supply or real GDP." } ] },
+            { question: "The ability of a country to produce a good or service at a lower opportunity cost than other countries is known as:", answer: "Comparative Advantage", options: [ { text: "Absolute Advantage", explanation: "Absolute advantage means being able to produce more of a good with the same resources, not necessarily at a lower opportunity cost." }, { text: "Competitive Advantage", explanation: "This is a broader business term for what makes a company's products more desirable than competitors'." }, { text: "Comparative Advantage", explanation: "Correct. This is the key principle underlying the gains from international trade." }, { text: "Economic Advantage", explanation: "This is a general term, not a specific economic principle like comparative advantage." } ] },
+            { question: "In the business cycle, what is the phase that follows a recession?", answer: "Expansion", options: [ { text: "Peak", explanation: "The peak is the highest point, reached just before a recession starts." }, { text: "Trough", explanation: "The trough is the lowest point of a recession, after which the next phase begins." }, { text: "Expansion", explanation: "Correct. Also known as a recovery, this phase follows the trough of a recession." }, { text: "Contraction", explanation: "Contraction is another name for a recession, the phase of economic decline." } ] },
+            { question: "Which organization is primarily responsible for monetary policy in the United States?", answer: "The Federal Reserve", options: [ { text: "The Treasury Department", explanation: "The Treasury manages government revenue, debt, and produces currency, but doesn't set monetary policy." }, { text: "The Federal Reserve", explanation: "Correct. 'The Fed' is the central bank of the U.S. and controls the money supply." }, { text: "The World Bank", explanation: "The World Bank is an international organization that provides financing and advice to developing countries." }, { text: "The Securities and Exchange Commission", explanation: "The SEC regulates the securities markets and protects investors." } ] },
+            { question: "The fundamental accounting equation is:", answer: "Assets = Liabilities + Equity", options: [ { text: "Assets = Liabilities + Equity", explanation: "Correct. This equation forms the basis of the balance sheet and must always balance." }, { text: "Assets = Revenue - Expenses", explanation: "This is incorrect. Revenue - Expenses equals Net Income." }, { text: "Equity = Assets + Liabilities", explanation: "This is incorrect. Equity is what's left over after subtracting liabilities from assets." }, { text: "Liabilities = Assets + Equity", explanation: "This is incorrect. This would imply liabilities are always greater than assets." } ] },
+            { question: "Which financial statement reports a company's revenues and expenses over a specific period of time?", answer: "Income Statement", options: [ { text: "Balance Sheet", explanation: "The Balance Sheet provides a snapshot of a company's assets, liabilities, and equity at a single point in time." }, { text: "Cash Flow Statement", explanation: "This statement tracks the movement of cash from operating, investing, and financing activities." }, { text: "Income Statement", explanation: "Correct. Often called the P&L, it shows a company's profitability over a quarter or a year." }, { text: "Statement of Retained Earnings", explanation: "This shows how a company's retained earnings have changed over a period." } ] },
+            { question: "The total market value of a company's outstanding shares of stock is its:", answer: "Market Capitalization", options: [ { text: "Book Value", explanation: "Book value is the net asset value of a company calculated from its balance sheet." }, { text: "Market Capitalization", explanation: "Correct. Calculated as Share Price × Number of Outstanding Shares." }, { text: "Enterprise Value", explanation: "Enterprise value is market cap plus debt, minority interest and preferred shares, minus total cash." }, { text: "Shareholder Equity", explanation: "This is an accounting measure (Assets - Liabilities), not a market value." } ] },
+            { question: "What does ROI stand for?", answer: "Return on Investment", options: [ { text: "Rate of Inflation", explanation: "The rate of inflation is the rate at which the general level of prices is rising." }, { text: "Return on Investment", explanation: "Correct. A key metric to evaluate the profitability of an investment." }, { text: "Revenue on Inventory", explanation: "This is not a standard financial acronym." }, { text: "Risk of Insolvency", explanation: "While a concern, this is not what ROI stands for." } ] },
+            { question: "Which of these is a measure of a company's ability to meet its short-term obligations?", answer: "Liquidity", options: [ { text: "Profitability", explanation: "Profitability measures a company's ability to generate profit from its operations." }, { text: "Leverage", explanation: "Leverage refers to the amount of debt used to finance assets." }, { text: "Solvency", explanation: "Solvency is the ability to meet long-term obligations, while liquidity is for short-term." }, { text: "Liquidity", explanation: "Correct. Liquidity ratios like the current ratio show if a company has enough cash or equivalents to pay its immediate bills." } ] },
+            { question: "A type of investment that represents an ownership stake in a company is called a:", answer: "Stock", options: [ { text: "Bond", explanation: "A bond is a loan made by an investor to a borrower, representing debt, not ownership." }, { text: "Mutual Fund", explanation: "A mutual fund is a pool of money from many investors to invest in a diversified portfolio of stocks, bonds, etc." }, { text: "Stock", explanation: "Correct. Also known as shares or equity, it signifies part ownership." }, { text: "Certificate of Deposit", explanation: "A CD is a savings product that holds a fixed amount of money for a fixed period of time, earning interest." } ] },
+            { question: "Money provided by investors to startup firms and small businesses with perceived long-term growth potential is known as:", answer: "Venture Capital", options: [ { text: "A Bank Loan", explanation: "A bank loan is a form of debt that must be repaid with interest, and is typically for more established businesses." }, { text: "A Government Grant", explanation: "Grants are non-repayable funds given by a government entity, often for specific public purposes." }, { text: "Venture Capital", explanation: "Correct. VCs provide capital in exchange for an equity stake, taking on high risk for potentially high returns." }, { text: "Crowdfunding", explanation: "Crowdfunding raises money from a large number of people, often online, which can be for equity, rewards, or donations." } ] },
+            { question: "The systematic allocation of the cost of a tangible asset over its useful life is called:", answer: "Depreciation", options: [ { text: "Amortization", explanation: "Amortization is a similar concept but applies to intangible assets, like patents or copyrights." }, { text: "Depreciation", explanation: "Correct. This accounting method spreads the cost of a physical asset (like a machine or building) over its useful life." }, { text: "Appreciation", explanation: "Appreciation is an increase in the value of an asset over time." }, { text: "Accrual", explanation: "Accrual is an accounting method that records revenues and expenses when they are earned, regardless of when cash is exchanged." } ] },
+            { question: "What does EBITDA stand for?", answer: "Earnings Before Interest, Taxes, Depreciation, and Amortization", options: [ { text: "Earnings Before Interest, Taxes, Depreciation, and Amortization", explanation: "Correct. It's a measure of a company's operating performance." }, { text: "Equity Before Interest, Taxes, and Debt Adjustments", explanation: "This is not a standard financial acronym." }, { text: "Earnings Before Income Tax and Debt Accrual", explanation: "This is not what EBITDA stands for." }, { text: "Estimated Business Income and Total Debt Adjustments", explanation: "This is not a standard financial acronym." } ] },
+            { question: "Which statement shows how changes in balance sheet accounts and income affect cash and cash equivalents?", answer: "Cash Flow Statement", options: [ { text: "Income Statement", explanation: "The Income Statement shows profitability (revenue - expenses) but not the actual cash movements." }, { text: "Balance Sheet", explanation: "The Balance Sheet is a snapshot in time of assets, liabilities, and equity." }, { text: "Statement of Retained Earnings", explanation: "This statement links the income statement to the balance sheet by showing changes in retained earnings." }, { text: "Cash Flow Statement", explanation: "Correct. It bridges the gap between the income statement and balance sheet by tracking cash." } ] },
+            { question: "What are the classic '4 Ps' of marketing?", answer: "Product, Price, Promotion, Place", options: [ { text: "Product, Price, Promotion, Place", explanation: "Correct. This is the traditional marketing mix, a foundation of marketing strategy." }, { text: "People, Process, Product, Price", explanation: "The '7 Ps' model adds People, Process, and Physical Evidence, but these are not the classic four." }, { text: "Promotion, Place, People, Profit", explanation: "This mixes elements from different models and incorrectly includes 'Profit' as a P." }, { text: "Price, Product, Profit, Plan", explanation: "This incorrectly includes 'Profit' and 'Plan' in the marketing mix." } ] },
+            { question: "A SWOT analysis evaluates a company's:", answer: "Strengths, Weaknesses, Opportunities, Threats", options: [ { text: "Sales, Workforce, Operations, Technology", explanation: "These might be components of a SWOT analysis, but they are not the four categories themselves." }, { text: "Strengths, Weaknesses, Opportunities, Threats", explanation: "Correct. Strengths and Weaknesses are internal, while Opportunities and Threats are external." }, { text: "Strategy, Workflows, Organization, Timing", explanation: "These are important business concepts but not the components of a SWOT analysis." }, { text: "Suppliers, Warehousing, Order-fulfillment, Transportation", explanation: "These are elements of logistics and supply chain management." } ] },
+            { question: "A specific group of consumers at which a company aims its products and services is the:", answer: "Target Market", options: [ { text: "General Population", explanation: "Marketing to the general population is usually inefficient; targeting is more effective." }, { text: "Focus Group", explanation: "A focus group is a research tool used to gather qualitative data from a small group, not the entire target." }, { text: "Target Market", explanation: "Correct. Identifying this group allows for more focused and effective marketing efforts." }, { text: "Lead User Group", explanation: "Lead users are early adopters who face needs that will be general in a marketplace later on." } ] },
+            { question: "The value premium that a company generates from a product with a recognizable name when compared to a generic equivalent is:", answer: "Brand Equity", options: [ { text: "Brand Loyalty", explanation: "Brand loyalty is a component of brand equity, referring to a customer's commitment to repurchase the brand." }, { text: "Brand Recognition", explanation: "This is the extent to which consumers can identify a brand, another component of brand equity." }, { text: "Brand Equity", explanation: "Correct. It's the overall value of the brand as a separate asset, built from recognition, loyalty, and perceived quality." }, { text: "Brand Association", explanation: "This refers to the mental links that consumers make between a brand and its key attributes." } ] },
+            { question: "Which management theory proposes that people are motivated by a hierarchy of needs, starting with physiological needs?", answer: "Maslow's Hierarchy of Needs", options: [ { text: "Theory X and Theory Y", explanation: "This theory presents two opposing sets of assumptions about employee motivation (lazy vs. self-motivated)." }, { text: "Herzberg's Two-Factor Theory", explanation: "This theory distinguishes between 'hygiene factors' (which cause dissatisfaction) and 'motivators' (which cause satisfaction)." }, { text: "Maslow's Hierarchy of Needs", explanation: "Correct. This theory posits a five-tier pyramid of human needs that dictate behavior." }, { text: "Vroom's Expectancy Theory", explanation: "This theory suggests that people are motivated by the expected outcome of their actions." } ] },
+            { question: "What does the 'S' in SMART goals stand for?", answer: "Specific", options: [ { text: "Simple", explanation: "While goals should be easy to understand, the 'S' in this popular acronym stands for something else." }, { text: "Strategic", explanation: "Goals should align with strategy, but 'Strategic' is not what the 'S' represents." }, { text: "Specific", explanation: "Correct. SMART stands for Specific, Measurable, Achievable, Relevant, and Time-bound." }, { text: "Significant", explanation: "Goals should be significant, but this is not the word used in the SMART framework." } ] },
+            { question: "The management of the flow of goods and services, from point of origin to point of consumption, is called:", answer: "Supply Chain Management", options: [ { text: "Logistics", explanation: "Logistics is a key part of supply chain management, but SCM is broader, including procurement and planning." }, { text: "Operations Management", explanation: "Operations management is focused on the internal processes of producing goods and services." }, { text: "Inventory Control", explanation: "This is one specific function within the larger scope of supply chain management." }, { text: "Supply Chain Management", explanation: "Correct. SCM encompasses all activities involved in moving a product from supplier to customer." } ] },
+            { question: "An organizational structure characterized by multiple layers of management is:", answer: "Hierarchical", options: [ { text: "Flat", explanation: "A flat organization has few or no levels of middle management between staff and executives." }, { text: "Matrix", explanation: "A matrix structure involves reporting to more than one manager (e.g., a functional manager and a project manager)." }, { text: "Hierarchical", explanation: "Correct. Also known as a 'tall' structure, it has a clear chain of command like a pyramid." }, { text: "Project-based", explanation: "This structure organizes teams around specific projects rather than traditional departments." } ] },
+            { question: "A company's commitment to manage the social, environmental, and economic effects of its operations responsibly is known as:", answer: "Corporate Social Responsibility (CSR)", options: [ { text: "Corporate Philanthropy", explanation: "This refers to charitable donations, which is one part of CSR but not the whole concept." }, { text: "Corporate Social Responsibility (CSR)", explanation: "Correct. CSR is an integrated business model that helps a company be socially accountable." }, { text: "Business Ethics", explanation: "Business ethics are the moral principles guiding how a business behaves, a foundation for CSR." }, { text: "Stakeholder Management", explanation: "This is the process of managing the expectations of anyone with an interest in a business, which is a key part of implementing CSR." } ] },
+            { question: "What is a KPI?", answer: "Key Performance Indicator", options: [ { text: "Key Profit Indicator", explanation: "While profit can be a KPI, KPI is a broader term for any key measure of performance." }, { text: "Key Performance Indicator", explanation: "Correct. KPIs are used to measure progress towards a specific strategic goal." }, { text: "Known Production Issue", explanation: "This is a term used in manufacturing or software development, not a performance metric." }, { text: "Key Project Initiative", explanation: "This describes a project, not a metric used to measure the project's success." } ] },
+            { question: "Which framework helps businesses visualize, design, and pivot their business model?", answer: "Business Model Canvas", options: [ { text: "SWOT Analysis", explanation: "A SWOT analysis is for strategic planning, assessing Strengths, Weaknesses, Opportunities, and Threats." }, { text: "Porter's Five Forces", explanation: "This framework analyzes industry competition, not a company's specific business model." }, { text: "Business Model Canvas", explanation: "Correct. It's a one-page template for developing and documenting new or existing business models." }, { text: "Ansoff Matrix", explanation: "The Ansoff Matrix is a strategic tool for analyzing and planning growth strategies." } ] },
+            { question: "A framework for analyzing the level of competition within an industry and business strategy development is:", answer: "Porter's Five Forces", options: [ { text: "BCG Matrix", explanation: "The BCG Matrix is used to analyze a portfolio of products or business units based on market share and growth rate." }, { text: "Porter's Five Forces", explanation: "Correct. The forces are: Threat of New Entrants, Buyer Power, Supplier Power, Threat of Substitutes, and Competitive Rivalry." }, { text: "Value Chain Analysis", explanation: "This is a tool for identifying ways to create more value within a company's activities." }, { text: "PEST Analysis", explanation: "PEST analysis examines the Political, Economic, Social, and Technological factors affecting a business." } ] },
+            { question: "The conditions that allow a company to produce a good or service at a lower price or in a more desirable fashion for customers are its:", answer: "Competitive Advantage", options: [ { text: "Core Competencies", explanation: "Core competencies are the specific skills and resources that a company excels at, which can lead to a competitive advantage." }, { text: "Competitive Advantage", explanation: "Correct. It's what allows a company to outperform its competitors in the marketplace." }, { text: "Unique Selling Proposition", explanation: "The USP is a marketing concept that highlights one specific benefit that a competitor does not offer." }, { text: "Strategic Assets", explanation: "These are the resources a company has (like patents or brands) that contribute to its competitive advantage." } ] },
+            { question: "A methodology for developing businesses and products that aims to shorten product development cycles is:", answer: "Lean Startup Methodology", options: [ { text: "Agile Development", explanation: "Agile is a related concept from software development that focuses on iterative progress, but Lean Startup is broader business methodology." }, { text: "Waterfall Model", explanation: "This is a traditional, sequential approach to development, the opposite of the iterative Lean method." }, { text: "Lean Startup Methodology", explanation: "Correct. It emphasizes rapid prototyping and validated learning through a build-measure-learn feedback loop." }, { text: "Six Sigma", explanation: "Six Sigma is a set of techniques and tools for process improvement, focused on reducing defects." } ] },
+            { question: "The reason why a customer would choose your product or service over a competitor's is your:", answer: "Value Proposition", options: [ { text: "Mission Statement", explanation: "A mission statement defines the company's purpose and objectives, which is more internal-facing." }, { text: "Value Proposition", explanation: "Correct. It is a clear statement that explains the benefits you deliver and why you are better than the competition." }, { text: "Brand Identity", explanation: "This is the collection of all elements that a company creates to portray the right image to its consumer." }, { text: "Marketing Message", explanation: "This is how the value proposition is communicated to the target market." } ] },
+            { question: "The cost advantages that enterprises obtain due to their scale of operation are referred to as:", answer: "Economies of Scale", options: [ { text: "Economies of Scope", explanation: "Economies of scope involve cost savings from producing a variety of products." }, { text: "Network Effects", explanation: "This is when a service becomes more valuable as more people use it." }, { text: "Economies of Scale", explanation: "Correct. As production volume increases, the cost per unit decreases." }, { text: "Synergies", explanation: "Synergy is when the interaction of two or more entities produces a combined effect greater than the sum of their separate effects (e.g., in a merger)." } ] },
+            { question: "The phenomenon whereby a product or service gains additional value as more people use it is the:", answer: "Network Effect", options: [ { text: "Viral Effect", explanation: "A viral effect refers to the rapid spread of information or a product through word-of-mouth, which is often driven by network effects." }, { text: "Bandwagon Effect", explanation: "This is a psychological phenomenon where people do something primarily because other people are doing it." }, { text: "Network Effect", explanation: "Correct. Social media platforms and telephone networks are classic examples." }, { text: "Flywheel Effect", explanation: "This is a business concept where small wins build on each other, creating momentum over time." } ] },
+            { question: "A business arrangement where one party allows another party to use a business's name and sell its products or services is called:", answer: "Franchising", options: [ { text: "A Partnership", explanation: "A partnership is a business structure where two or more individuals own and manage the business together." }, { text: "A Merger", explanation: "A merger is the combination of two companies into one." }, { text: "A Licensing Agreement", explanation: "Licensing typically involves permission to use a specific piece of intellectual property (like a character), not the entire business model." }, { text: "Franchising", explanation: "Correct. The franchisee pays a fee to the franchisor to use their established brand and business system." } ] },
+            { question: "What is the term for a strategy of entering an uncontested market space, creating new demand, and making the competition irrelevant?", answer: "Blue Ocean Strategy", options: [ { text: "Red Ocean Strategy", explanation: "This is the opposite strategy, involving competing in existing markets and fighting for market share." }, { text: "Guerrilla Marketing", explanation: "This is an unconventional marketing tactic designed to get maximum results from minimal resources." }, { text: "Blue Ocean Strategy", explanation: "Correct. It's about creating new market space ('blue oceans') instead of competing in bloody 'red oceans'." }, { text: "Disruptive Innovation", explanation: "This is an innovation that creates a new market and value network, eventually disrupting an existing market." } ] },
+            { question: "The strategy of expanding into new business areas to reduce risk is called:", answer: "Diversification", options: [ { text: "Market Penetration", explanation: "This strategy focuses on increasing sales of existing products in existing markets." }, { text: "Diversification", explanation: "Correct. This involves entering new markets with new products to spread risk." }, { text: "Market Development", explanation: "This strategy involves selling existing products in new markets." }, { text: "Product Development", explanation: "This strategy involves creating new products for existing markets." } ] },
+        ];
+
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+
+        const finalScoreEl = document.getElementById('final-score');
+        const scoreMessageEl = document.getElementById('score-message');
+
+        // --- State Variables ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let shuffledQuestions = [];
+        let answerSelected = false;
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', startQuiz);
+
+        // --- Functions ---
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+
+            currentQuestionIndex = 0;
+            score = 0;
+            answerSelected = false;
+            // Shuffle questions to make it different each time
+            shuffledQuestions = quizData.sort(() => Math.random() - 0.5);
+
+            updateScoreDisplay();
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+
+            // Shuffle answer options
+            const shuffledOptions = [...currentQuestion.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(option => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('option-btn-wrapper');
+
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.classList.add('option-btn', 'w-full', 'p-4', 'rounded-lg', 'text-left', 'font-medium', 'bg-gray-50');
+
+                button.addEventListener('click', () => selectAnswer(button));
+
+                wrapper.appendChild(button);
+                optionsContainer.appendChild(wrapper);
+            });
+
+            updateProgress();
+        }
+
+        function resetState() {
+            nextBtn.classList.add('hidden');
+            while (optionsContainer.firstChild) {
+                optionsContainer.removeChild(optionsContainer.firstChild);
+            }
+            answerSelected = false;
+        }
+
+        function selectAnswer(selectedBtn) {
+            if (answerSelected) return; // Prevent changing answer
+            answerSelected = true;
+
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            const correctAnswerText = currentQuestion.answer;
+            const isCorrect = selectedBtn.textContent === correctAnswerText;
+
+            if (isCorrect) {
+                score++;
+                updateScoreDisplay();
+            }
+
+            Array.from(optionsContainer.children).forEach(wrapper => {
+                const button = wrapper.querySelector('button');
+                button.disabled = true;
+
+                const buttonText = button.textContent;
+                const optionData = currentQuestion.options.find(opt => opt.text === buttonText);
+
+                if (!optionData) return;
+
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback-text');
+
+                const explanation = document.createElement('p');
+                explanation.textContent = optionData.explanation;
+                explanation.classList.add('explanation-text');
+
+                if(buttonText === correctAnswerText) {
+                    button.classList.add('correct');
+                    const status = document.createElement('div');
+                    status.textContent = 'Right answer';
+                    status.classList.add('status-label', 'correct');
+                    feedbackDiv.appendChild(status);
+                } else if (button === selectedBtn) {
+                     button.classList.add('incorrect');
+                     const status = document.createElement('div');
+                     status.textContent = 'Not quite';
+                     status.classList.add('status-label', 'incorrect');
+                     feedbackDiv.appendChild(status);
+                }
+
+                feedbackDiv.appendChild(explanation);
+                wrapper.appendChild(feedbackDiv);
+            });
+
+            nextBtn.classList.remove('hidden');
+        }
+
+        function updateProgress() {
+            const progressPercentage = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+
+            const scorePercent = Math.round((score / quizData.length) * 100);
+            finalScoreEl.textContent = `${scorePercent}%`;
+
+            let message = '';
+            if (scorePercent >= 90) {
+                message = "Excellent! You're a business and economics guru!";
+            } else if (scorePercent >= 75) {
+                message = "Great job! You have a strong understanding of these concepts.";
+            } else if (scorePercent >= 50) {
+                message = "Not bad! A little more study and you'll be an expert.";
+            } else {
+                message = "Good effort! Keep learning and you'll improve.";
+            }
+            scoreMessageEl.textContent = message;
+        }
+
+    </script>
+</body>
+</html>

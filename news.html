@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 News Quiz - 50 Questions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f9fafb; /* Tailwind gray-50 */
+            border-radius: 1rem; /* Tailwind rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
+        }
+        .question-text {
+            font-size: 1.25rem; /* Tailwind text-xl */
+            font-weight: 600; /* Tailwind font-semibold */
+            margin-bottom: 1.5rem; /* Tailwind mb-6 */
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+        .option-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem; /* Tailwind p-3 px-4 */
+            margin-bottom: 0.75rem; /* Tailwind mb-3 */
+            border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            background-color: #ffffff; /* Tailwind bg-white */
+            color: #374151; /* Tailwind text-gray-700 */
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option-button:hover {
+            background-color: #eff6ff; /* Tailwind bg-blue-50 */
+            border-color: #93c5fd; /* Tailwind border-blue-300 */
+        }
+        .option-button.selected {
+            background-color: #bfdbfe; /* Tailwind bg-blue-200 */
+            border-color: #3b82f6; /* Tailwind border-blue-500 */
+            font-weight: 500; /* Tailwind font-medium */
+        }
+        .feedback-correct {
+            color: #059669; /* Tailwind text-green-600 */
+            font-weight: 500;
+        }
+        .feedback-incorrect {
+            color: #dc2626; /* Tailwind text-red-600 */
+            font-weight: 500;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb; /* Tailwind bg-gray-200 */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .progress-bar {
+            height: 1rem; /* Tailwind h-4 */
+            background-color: #3b82f6; /* Tailwind bg-blue-600 */
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+        }
+        .btn-primary {
+            background-color: #2563eb; /* Tailwind bg-blue-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8; /* Tailwind bg-blue-700 */
+        }
+        .btn-secondary {
+            background-color: #6b7280; /* Tailwind bg-gray-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563; /* Tailwind bg-gray-600 */
+        }
+        .results-container h2 {
+            font-size: 1.875rem; /* Tailwind text-3xl */
+            font-weight: 700; /* Tailwind font-bold */
+            color: #1f2937; /* Tailwind gray-800 */
+            margin-bottom: 1rem;
+        }
+        .results-container p {
+            font-size: 1.125rem; /* Tailwind text-lg */
+            color: #374151; /* Tailwind text-gray-700 */
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="quiz-container">
+        <h1 class="text-3xl font-bold text-center text-blue-700 mb-2">2025 News In Review Quiz</h1>
+        <p class="text-center text-gray-600 mb-8">Test your knowledge of events from late 2024 and early 2025!</p>
+
+        <div id="quiz-area">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div id="question-number" class="text-sm text-gray-500 mb-2"></div>
+            <div id="question-container">
+                <p class="question-text" id="question"></p>
+                <div id="options-container">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="feedback" class="mt-4 mb-4 text-sm"></div>
+            <button id="next-button" class="btn-primary w-full mt-6">Next Question</button>
+        </div>
+
+        <div id="results-container" class="hidden text-center">
+            <h2>Quiz Completed!</h2>
+            <p id="score" class="text-2xl font-semibold my-4"></p>
+            <p id="percentage" class="text-xl my-4"></p>
+            <p id="feedback-message" class="text-lg my-4"></p> <!-- Personalized comments removed from here -->
+            <button id="restart-button" class="btn-secondary mt-6">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Politics & World Affairs
+            {
+                question: "Which country legalized same-sex marriage in early 2025, becoming the 37th globally to do so?",
+                options: ["Switzerland", "Italy", "Liechtenstein", "Austria"],
+                answer: "Liechtenstein"
+            },
+            {
+                question: "Who announced their resignation as Canadian Prime Minister in early 2025?",
+                options: ["Pierre Poilievre", "Justin Trudeau", "Jagmeet Singh", "Erin O'Toole"],
+                answer: "Justin Trudeau"
+            },
+            {
+                question: "What was the highest effective tariff rate the US had on China?",
+                options: ["110%", "125%", "145%", "160%"],
+                answer: "145%"
+            },
+            {
+                question: "The city of The Hague in the Netherlands is scheduled to host a major summit for which international organization from June 24-26, 2025?",
+                options: ["G7", "G20", "United Nations", "NATO"],
+                answer: "NATO"
+            },
+            {
+                question: "In early 2025, Pope Francis appointed Sister Simona Brambilla to a significant role, making her the Vatican's first female what?",
+                options: ["Secretary of State", "Prefect of a Dicastery", "Ambassador to the UN", "Head of Vatican Bank"],
+                answer: "Prefect of a Dicastery"
+            },
+            {
+                question: "What is Ukraine's covert drone attack deep inside Russia on 1 June 2025 called?",
+                options: ["Operation Paperclip", "Operation Synytsia", "Operation Spiderweb", "Operation Stream"],
+                answer: "Operation Spiderweb"
+            },
+            {
+                question: "The US Farm Bill, a major piece of legislation covering agricultural subsidies and food aid, was up for reauthorization in what year?",
+                options: ["2023", "2024", "2025", "2026"],
+                answer: "2025"
+            },
+             {
+                question: "Myanmar's military government enacted a controversial law in early 2025 imposing strict controls on what?",
+                options: ["Print media", "Public gatherings", "Digital communications and VPN use", "Foreign investment"],
+                answer: "Digital communications and VPN use"
+            },
+            {
+                question: "Protests by Haredi Jews in Israel in late 2024 / early 2025 were primarily against what issue?",
+                options: ["Economic policies", "Religious restrictions", "Conscription into the military", "Peace negotiations"],
+                answer: "Conscription into the military"
+            },
+            {
+                question: "The King of Denmark officially changed the Danish coat of arms in early 2025 to feature Greenland and which other territory more prominently?",
+                options: ["Iceland", "Faroe Islands", "Svalbard", "Bornholm"],
+                answer: "Faroe Islands"
+            },
+
+            // Technology & Science
+            {
+                question: "What major AI development, capable of handling text, images, audio, and video, was highlighted as a key tech trend for 2025?",
+                options: ["Quantum AI", "Neuromorphic AI", "Multimodal Generative AI", "Symbolic AI"],
+                answer: "Multimodal Generative AI"
+            },
+            {
+                question: "According to tech forecasts for 2025, what type of AI is becoming mainstream, allowing devices to process AI tasks locally for enhanced privacy and speed?",
+                options: ["Cloud AI", "Edge AI", "Centralized AI", "Distributed AI"],
+                answer: "Edge AI"
+            },
+            {
+                question: "Breakthroughs in what type of battery technology were reported in 2024-2025, promising to revolutionize the EV market?",
+                options: ["Lithium-air", "Sodium-ion", "Solid-state", "Graphene-based"],
+                answer: "Solid-state"
+            },
+            {
+                question: "What type of cryptography is being developed to protect data against attacks from future quantum computers, a key tech trend for 2025?",
+                options: ["Elliptic Curve Cryptography", "AES-256", "Post-Quantum Cryptography", "RSA"],
+                answer: "Post-Quantum Cryptography"
+            },
+            {
+                question: "Demis Hassabis of Google DeepMind was part of a team that received acclaim (including a Nobel Prize component) for work on AlphaFold, an AI system that predicts what?",
+                options: ["Stock market trends", "Protein structures", "Weather patterns", "Genetic diseases"],
+                answer: "Protein structures"
+            },
+            {
+                question: "Researchers from MIT and McMaster University used AI in 2024 to discover a new antibiotic compound effective against which drug-resistant bacteria?",
+                options: ["MRSA", "Clostridium difficile", "Acinetobacter baumannii", "Pseudomonas aeruginosa"],
+                answer: "Acinetobacter baumannii"
+            },
+            {
+                question: "Gartner's tech trends for 2025 predicted that by 2028, what minimum percentage of everyday business decisions will be made autonomously using AI agents?",
+                options: ["5%", "10%", "15%", "25%"],
+                answer: "15%"
+            },
+            {
+                question: "The EscaPADE mission, scheduled for launch in 2025, involves dual small satellites destined for which planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                answer: "Mars"
+            },
+             {
+                question: "A Japanese ispace mission named 'Resilience' was scheduled to attempt a lunar landing around June 2025. What is ispace primarily focused on?",
+                options: ["Deep space telescopes", "Mars rovers", "Lunar exploration and landers", "Satellite internet"],
+                answer: "Lunar exploration and landers"
+            },
+            {
+                question: "Scientific research highlighted in 2024 revealed that certain lipids, previously thought to be just fuel for tumors, act as 'fatty shields' helping cancer cells do what?",
+                options: ["Grow faster", "Evade the immune system", "Become resistant to chemotherapy", "Metastasize more easily"],
+                answer: "Evade the immune system"
+            },
+            {
+                question: "The ESA's Lunar Pathfinder mission, planned for 2025, is designed to act as what for future moon missions?",
+                options: ["A lunar habitat", "A sample return vehicle", "A communications relay satellite", "A lunar GPS system"],
+                answer: "A communications relay satellite"
+            },
+            {
+                question: "What does XAI, a growing standard in AI development by 2025, stand for?",
+                options: ["Experimental Artificial Intelligence", "Extended Algorithmic Interface", "Explainable Artificial Intelligence", "Exponential AI"],
+                answer: "Explainable Artificial Intelligence"
+            },
+            {
+                question: "The concept of 'AI Agents' gained prominence in 2025 tech discussions. What is a key characteristic of AI Agents?",
+                options: ["They only respond to direct prompts", "They can perform actions autonomously to achieve goals", "They are specialized in a single task", "They require constant human supervision"],
+                answer: "They can perform actions autonomously to achieve goals"
+            },
+            {
+                question: "CRISPR-Cas9, a tool that continued to see new applications in 2024-2025, is often likened to what in genetics?",
+                options: ["A genetic amplifier", "A genetic microscope", "Genetic scissors", "A genetic map"],
+                answer: "Genetic scissors"
+            },
+            {
+                question: "What alternative energy source saw scaled-up production in 2025, offering a sustainable solution for energy-intensive industries?",
+                options: ["Nuclear Fusion", "Geothermal Energy", "Green Hydrogen", "Tidal Power"],
+                answer: "Green Hydrogen"
+            },
+
+            // Sports
+            {
+                question: "Where was the 2025 UEFA Champions League Final scheduled to be held on May 31st?",
+                options: ["London", "Paris", "Madrid", "Munich"],
+                answer: "Munich"
+            },
+            {
+                question: "The 2025 FIFA Club World Cup, featuring an expanded format, was set to be hosted in which country?",
+                options: ["Qatar", "USA", "Saudi Arabia", "Brazil"],
+                answer: "USA"
+            },
+            {
+                question: "According to Rockefeller University's 2024 research, the process of wound repair involving hair follicle stem cells is significantly mediated by which active form of Vitamin A?",
+                options: ["Retinol", "Beta-Carotene", "Retinaldehyde", "Retinoic acid"],
+                answer: "Retinoic acid"
+            },
+            {
+                question: "The Ryder Cup in September 2025, a major men's golf competition between teams from Europe and the USA, was scheduled to be held at which famous New York course?",
+                options: ["Shinnecock Hills", "Winged Foot", "Bethpage Black", "Oak Hill"],
+                answer: "Bethpage Black"
+            },
+            {
+                question: "Which city was set to host the MLB All-Star Game in July 2025?",
+                options: ["Los Angeles", "Chicago", "Atlanta", "Boston"],
+                answer: "Atlanta"
+            },
+            {
+                question: "The 2026 Winter Olympic Games are scheduled to be co-hosted by Milan and which other Italian town?",
+                options: ["Turin", "Cortina d'Ampezzo", "Aosta", "Bolzano"],
+                answer: "Cortina d'Ampezzo"
+            },
+            {
+                question: "An NFL International Series game in September 2025 was scheduled for São Paulo, marking the NFL's first regular-season game in which South American country?",
+                options: ["Argentina", "Colombia", "Chile", "Brazil"],
+                answer: "Brazil"
+            },
+            {
+                question: "The OECD's 2025 Environmental Performance Review of Sweden highlighted a decline in revenue from environmentally related taxes. It fell from 2.5% of GDP in 2010 to what approximate percentage in 2023?",
+                options: ["0.8%", "1.2%", "1.6%", "2.0%"],
+                answer: "1.6%"
+            },
+            {
+                question: "Which European capital city was added to the NFL International Series schedule for a game in November 2025?",
+                options: ["Paris", "Rome", "Madrid", "Amsterdam"],
+                answer: "Madrid"
+            },
+            {
+                question: "In addition to London and a German city, which Irish city was also slated to host an NFL regular season game in 2025?",
+                options: ["Cork", "Galway", "Belfast", "Dublin"],
+                answer: "Dublin"
+            },
+
+
+            // Economy & Environment
+            {
+                question: "What was the European Union's forecasted GDP growth for 2025, according to the Spring 2025 Economic Forecast?",
+                options: ["0.5%", "1.1%", "1.8%", "2.2%"],
+                answer: "1.1%"
+            },
+            {
+                question: "The Global Methane Pledge, with an EU legislation deadline in May 2025, was initially launched at which major climate summit?",
+                options: ["COP25 (Madrid)", "COP26 (Glasgow)", "COP27 (Sharm El Sheikh)", "COP28 (Dubai)"],
+                answer: "COP26 (Glasgow)"
+            },
+            {
+                question: "Germany's Fuel Trading Act set a fixed CO2 price per tonne for 2025. What was this price?",
+                options: ["35 Euros", "45 Euros", "55 Euros", "65 Euros"],
+                answer: "55 Euros"
+            },
+            {
+                question: "According to Morgan Stanley's 2025 outlook, the US Federal Reserve was likely to hold interest rates steady until approximately when?",
+                options: ["Mid-2025", "Late 2025", "March 2026", "Mid-2026"],
+                answer: "March 2026"
+            },
+            {
+                question: "Which major Asian economy was forecasted by Morgan Stanley to grow around 4.5% in 2025, despite facing deflationary pressures and housing sector weakness?",
+                options: ["Japan", "India", "South Korea", "China"],
+                answer: "China"
+            },
+            {
+                question: "The UK Emissions Trading Scheme (UK-ETS) is set to make monitoring of what type of CO2 emissions mandatory from 2026?",
+                options: ["Industrial CO2", "Transportation CO2", "Biogenic CO2", "Agricultural CO2"],
+                answer: "Biogenic CO2"
+            },
+            {
+                question: "China was expected to implement a new standard by the end of 2025 for the continuous long-term sampling of what type of pollutants, often associated with waste incineration?",
+                options: ["Sulfur Dioxide", "Nitrogen Oxides", "Dioxins", "Particulate Matter"],
+                answer: "Dioxins"
+            },
+            {
+                question: "The European Central Bank (ECB) was projected in mid-2025 to continue its easing cycle, potentially bringing its policy rate to what level by December 2025?",
+                options: ["0.50%", "1.00%", "1.50%", "2.00%"],
+                answer: "1.50%"
+            },
+             {
+                question: "A significant focus for environmental regulation in 2025 was 'disinformation security' in the context of what?",
+                options: ["Wildlife conservation data", "Authenticity of carbon credits", "Accuracy of climate models", "AI-generated content related to environmental claims"],
+                answer: "AI-generated content related to environmental claims" // Inferred from tech trends on disinformation
+            },
+             {
+                question: "What is a tariff?",
+                options: ["A tax imposed on imported goods and services", "A limit on the quantity of goods that can be imported", "A subsidy given to domestic producers", "A ban on trade with a specific country"],
+                answer: "A tax imposed on imported goods and services"
+            },
+
+            // Culture & Arts
+            {
+                question: "Which Japanese artist won the LOEWE FOUNDATION Craft Prize 2025 for the work 'Realm of Living Things 19'?",
+                options: ["Takashi Murakami", "Yoshitomo Nara", "Kunimasa Aoki", "Yayoi Kusama"],
+                answer: "Kunimasa Aoki"
+            },
+            {
+                question: "The inaugural Art Basel Awards were announced in 2025. Which British artist, known for her role in the British Black Arts Movement, was among the 'Icon' category winners?",
+                options: ["Tracey Emin", "Lubaina Himid", "Rachel Whiteread", "Jenny Saville"],
+                answer: "Lubaina Himid"
+            },
+            {
+                question: "Following the 2024 Austrian legislative election, Herbert Kickl, leader of which political party, was given the mandate to form a new government?",
+                options: ["Social Democratic Party (SPÖ)", "Austrian People's Party (ÖVP)", "The Greens", "Freedom Party (FPÖ)"],
+                answer: "Freedom Party (FPÖ)"
+            },
+            {
+                question: "In early 2025, the Palestinian Authority suspended the broadcasts and operations of which major news network within Palestine?",
+                options: ["BBC News Arabic", "CNN International", "Al Jazeera", "France 24 Arabic"],
+                answer: "Al Jazeera"
+            },
+            {
+                question: "The 'Battle of the Flowers', an event where elaborately decorated floats parade through the city, is a notable summer festival in which Spanish city?",
+                options: ["Seville", "Barcelona", "Madrid", "Valencia"],
+                answer: "Valencia"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = []; // To store user's answers for review if needed
+
+        const questionContainer = document.getElementById('question-container');
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackElement = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-button');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreElement = document.getElementById('score');
+        const percentageElement = document.getElementById('percentage');
+        const feedbackMessageElement = document.getElementById('feedback-message');
+        const restartButton = document.getElementById('restart-button');
+        const quizArea = document.getElementById('quiz-area');
+        const progressBar = document.getElementById('progress-bar');
+        const questionNumberElement = document.getElementById('question-number');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadQuestion() {
+            feedbackElement.innerHTML = '';
+            nextButton.disabled = true; // Disable next until an answer is selected
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionElement.innerText = currentQuestion.question;
+            questionNumberElement.innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            optionsContainer.innerHTML = '';
+
+            // Shuffle options for variety
+            const shuffledOptions = [...currentQuestion.options];
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.classList.add('option-button');
+                button.addEventListener('click', () => selectAnswer(button, option, currentQuestion.answer));
+                optionsContainer.appendChild(button);
+            });
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const progressPercentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = progressPercentage + '%';
+        }
+
+        function selectAnswer(buttonEl, selectedOption, correctAnswer) {
+            // Disable all option buttons after selection
+            const optionButtons = optionsContainer.querySelectorAll('.option-button');
+            optionButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('selected'); // Clear previous selections styling if any
+            });
+
+            buttonEl.classList.add('selected'); // Style the selected button
+
+            userAnswers[currentQuestionIndex] = selectedOption;
+
+            if (selectedOption === correctAnswer) {
+                score++;
+                feedbackElement.innerHTML = '<span class="feedback-correct">Correct!</span>';
+            } else {
+                feedbackElement.innerHTML = `<span class="feedback-incorrect">Incorrect.</span> The correct answer was: <strong>${correctAnswer}</strong>`;
+            }
+            nextButton.disabled = false; // Enable next button
+             if (currentQuestionIndex === quizData.length - 1) {
+                nextButton.innerText = 'Show Results';
+            }
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            shuffleArray(quizData); // Re-shuffle questions for a new attempt
+            resultsContainer.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            nextButton.innerText = 'Next Question';
+            loadQuestion();
+        });
+
+        function showResults() {
+            progressBar.style.width = '100%';
+            quizArea.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            const percentage = Math.round((score / quizData.length) * 100);
+            scoreElement.innerText = `Your Score: ${score} out of ${quizData.length}`;
+            percentageElement.innerText = `Percentage: ${percentage}%`;
+
+        let message = '';
+            if (percentage >= 80) {
+                message = "Excellent! You're a news expert!";
+            } else if (percentage >= 60) {
+                message = "Great job! You're well-informed.";
+            } else if (percentage >= 40) {
+                message = "Not bad! Keep up with the news.";
+            } else {
+                message = "Looks like you might want to catch up on current events!";
+            }
+            feedbackMessageElement.innerText = message;
+        }
+
+        // Start the quiz
+        shuffleArray(quizData); // Shuffle questions at the start
+        loadQuestion();
+    </script>
+
+</body>
+</html>

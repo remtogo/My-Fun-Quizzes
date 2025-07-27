@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAT English Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #718096;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        .choice-label:hover {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        .selected-choice {
+            background-color: #5a67d8 !important;
+            border-color: #7f9cf5 !important;
+            color: white !important;
+        }
+        .correct-answer {
+            background-color: #2f855a;
+            border-left-color: #68d391;
+            color: #f0fff4;
+        }
+        .incorrect-answer {
+            background-color: #c53030;
+            border-left-color: #fc8181;
+            color: #fff5f5;
+        }
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #4a5568;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .modal-close-button {
+            background-color: #5a67d8;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .modal-close-button:hover {
+            background-color: #4c51bf;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-indigo-800 to-gray-900 min-h-screen flex items-center justify-center p-4 selection:bg-indigo-400 selection:text-indigo-900">
+
+    <div id="quiz-container" class="bg-gray-800 text-gray-200 p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-2xl">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-6 sm:mb-8">SAT English Practice Quiz</h1>
+
+        <!-- Question Area -->
+        <div id="question-area" class="mb-6">
+            <div id="progress-indicator" class="text-sm text-gray-400 mb-2 text-right"></div>
+            <p id="question-text" class="text-lg sm:text-xl font-semibold text-gray-100 mb-4 min-h-[60px]"></p>
+            <div id="choices-container" class="space-y-3">
+                <!-- Choices are dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Navigation Area -->
+        <div id="navigation-area" class="flex justify-between items-center mt-8">
+            <button id="prev-button" class="bg-gray-600 hover:bg-gray-500 text-gray-100 font-semibold py-2 px-4 sm:px-6 rounded-lg shadow transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+            <button id="next-button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 sm:px-6 rounded-lg shadow transition duration-150 ease-in-out">Next</button>
+            <button id="submit-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 sm:px-6 rounded-lg shadow transition duration-150 ease-in-out hidden">Show Results</button>
+        </div>
+
+        <!-- Results Area -->
+        <div id="results-area" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-100 mb-4 text-center">Quiz Results</h2>
+            <p id="score-percentage" class="text-3xl font-bold text-purple-400 mb-2 text-center"></p>
+            <p id="score-details" class="text-lg text-gray-300 mb-6 text-center"></p>
+            <div id="detailed-feedback" class="space-y-4">
+                <!-- Detailed feedback on questions is shown here -->
+            </div>
+            <div class="text-center mt-8">
+                <button id="restart-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition duration-150 ease-in-out">Restart Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for messages -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content">
+            <p id="modal-text" class="text-lg mb-6"></p>
+            <button id="modal-close" class="modal-close-button">OK</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Quiz Data ---
+        // Array of question objects. Each object contains the question, choices, correct answer, type, and an optional explanation.
+        const questions = [
+            // Questions 1-15
+            {
+                question: "Choose the word that best completes the sentence: The scientist made a discovery that was truly ______; it changed the way everyone thought about the universe.",
+                choices: ["mundane", "revolutionary", "trite", "conventional"],
+                correctAnswer: "revolutionary",
+                type: "Vocabulary"
+            },
+            {
+                question: "Select the synonym for 'ubiquitous':",
+                choices: ["rare", "omnipresent", "scarce", "hidden"],
+                correctAnswer: "omnipresent",
+                type: "Vocabulary"
+            },
+            {
+                question: "The politician's speech was filled with ______ language, making it difficult for the average citizen to understand.",
+                choices: ["lucid", "esoteric", "straightforward", "common"],
+                correctAnswer: "esoteric",
+                type: "Vocabulary"
+            },
+            {
+                question: "Despite the ______ evidence against him, the defendant maintained his innocence.",
+                choices: ["flimsy", "compelling", "irrelevant", "sparse"],
+                correctAnswer: "compelling",
+                type: "Vocabulary"
+            },
+            {
+                question: "Her ______ nature made her an excellent diplomat, always able to find common ground.",
+                choices: ["belligerent", "conciliatory", "obstinate", "volatile"],
+                correctAnswer: "conciliatory",
+                type: "Vocabulary"
+            },
+            {
+                question: "Identify the error in the sentence: \"The team, along with their coach, are practicing for the championship.\"",
+                choices: ["The team", "along with", "are", "no error"],
+                correctAnswer: "are",
+                explanation: "The subject is 'The team' (singular), so the verb should be 'is'. Phrases like 'along with' do not change the number of the subject.",
+                type: "Grammar"
+            },
+            {
+                question: "Which sentence is grammatically correct?",
+                choices: [
+                    "Him and I went to the store.",
+                    "He and I went to the store.",
+                    "Me and him went to the store.",
+                    "Him and me went to the store."
+                ],
+                correctAnswer: "He and I went to the store.",
+                explanation: "'He' and 'I' are subject pronouns.",
+                type: "Grammar"
+            },
+            {
+                question: "Choose the correct form of the verb: \"Neither the students nor the teacher ______ satisfied with the outcome.\"",
+                choices: ["were", "was", "are", "be"],
+                correctAnswer: "was",
+                explanation: "When subjects are joined by 'neither...nor', the verb agrees with the subject closest to it ('teacher' is singular).",
+                type: "Grammar"
+            },
+            {
+                question: "The book, ______ was written by a famous author, quickly became a bestseller.",
+                choices: ["that", "which", "who", "whom"],
+                correctAnswer: "which",
+                explanation: "'Which' is used for non-restrictive clauses (providing extra information) about things.",
+                type: "Grammar"
+            },
+            {
+                question: "What is the correct possessive form? \"The ______ decision was final.\"",
+                choices: ["committees's", "committees'", "committee's", "committes"],
+                correctAnswer: "committee's",
+                explanation: "For a singular noun 'committee', the possessive is 'committee's'. 'Committees'' would be for a plural noun.",
+                type: "Grammar"
+            },
+            {
+                question: "The CEO's ______ demeanor often intimidated his employees, making them hesitant to voice concerns.",
+                choices: ["affable", "austere", "jovial", "lenient"],
+                correctAnswer: "austere",
+                type: "Vocabulary"
+            },
+            {
+                question: "She had a ______ for languages, learning new ones with remarkable ease.",
+                choices: ["disdain", "proclivity", "aversion", "indifference"],
+                correctAnswer: "proclivity",
+                type: "Vocabulary"
+            },
+            {
+                question: "The ancient artifact was so ______ that even the slightest touch could damage it.",
+                choices: ["robust", "sturdy", "fragile", "resilient"],
+                correctAnswer: "fragile",
+                type: "Vocabulary"
+            },
+            {
+                question: "Identify the sentence with correct parallel structure:",
+                choices: [
+                    "She enjoys hiking, to swim, and riding her bike.",
+                    "She enjoys to hike, swimming, and to ride her bike.",
+                    "She enjoys hiking, swimming, and riding her bike.",
+                    "She enjoys hiking, to swim, and to ride her bike."
+                ],
+                correctAnswer: "She enjoys hiking, swimming, and riding her bike.",
+                explanation: "Parallel structure requires items in a list to be in the same grammatical form (here, gerunds: hiking, swimming, riding).",
+                type: "Grammar"
+            },
+            {
+                question: "Which of these sentences uses the subjunctive mood correctly?",
+                choices: [
+                    "If I was rich, I would travel the world.",
+                    "I wish I am taller.",
+                    "It is important that he is on time.",
+                    "If I were you, I would study harder."
+                ],
+                correctAnswer: "If I were you, I would study harder.",
+                explanation: "The subjunctive mood 'were' is used for hypothetical situations (contrary to fact).",
+                type: "Grammar"
+            },
+            // Questions 16-25
+            {
+                question: "The speaker's ______ arguments failed to convince the skeptical audience; they lacked substance and evidence.",
+                choices: ["cogent", "tenuous", "robust", "sound"],
+                correctAnswer: "tenuous",
+                type: "Vocabulary"
+            },
+            {
+                question: "Identify the error in the sentence: \"Each of the contestants were given a special badge before the competition started.\"",
+                choices: ["Each of the", "contestants", "were given", "no error"],
+                correctAnswer: "were given",
+                explanation: "The subject 'Each' is singular, so the verb should be 'was given'.",
+                type: "Grammar"
+            },
+            {
+                question: "Select the word that is an antonym for 'TACITURN':",
+                choices: ["garrulous", "silent", "reserved", "introverted"],
+                correctAnswer: "garrulous",
+                type: "Vocabulary"
+            },
+            {
+                question: "Which sentence is punctuated correctly?",
+                choices: [
+                    "The journey was long, however, the destination was worth it.",
+                    "The journey was long; however, the destination was worth it.",
+                    "The journey was long, however the destination was worth it.",
+                    "The journey was long however, the destination was worth it."
+                ],
+                correctAnswer: "The journey was long; however, the destination was worth it.",
+                explanation: "A semicolon is used before a conjunctive adverb like 'however' when it connects two independent clauses.",
+                type: "Grammar"
+            },
+            {
+                question: "The artist was known for her ______ attention to detail, often spending weeks perfecting a single element of her sculpture.",
+                choices: ["meticulous", "cursory", "perfunctory", "superficial"],
+                correctAnswer: "meticulous",
+                type: "Vocabulary"
+            },
+            {
+                question: "Identify the sentence with a dangling modifier: ",
+                choices: [
+                    "After finishing the report, the computer was turned off by Sarah.",
+                    "Having studied all night, the exam seemed easy to Mark.",
+                    "To improve his skills, lessons were taken by the pianist.",
+                    "Running through the park, a squirrel darted in front of me."
+                ],
+                correctAnswer: "To improve his skills, lessons were taken by the pianist.",
+                explanation: "It seems like the 'lessons' were trying to improve their own skills. Corrected: 'To improve his skills, the pianist took lessons.'",
+                type: "Grammar"
+            },
+            {
+                question: "The new policies were designed to ______ the suffering of the people affected by the disaster.",
+                choices: ["exacerbate", "alleviate", "intensify", "magnify"],
+                correctAnswer: "alleviate",
+                type: "Vocabulary"
+            },
+            {
+                question: "She is one of those managers who ______ always ready to listen to their team's concerns.",
+                choices: ["is", "are", "was", "has been"],
+                correctAnswer: "are",
+                explanation: "The pronoun 'who' refers to 'managers' (plural), so the plural verb 'are' is correct.",
+                type: "Grammar"
+            },
+            {
+                question: "His ______ and often offensive remarks at the formal dinner made everyone uncomfortable.",
+                choices: ["decorous", "uncouth", "urbane", "polished"],
+                correctAnswer: "uncouth",
+                type: "Vocabulary"
+            },
+            {
+                question: "The committee recommended that the proposal ______ accepted without delay.",
+                choices: ["is", "be", "was", "will be"],
+                correctAnswer: "be",
+                explanation: "This sentence uses the subjunctive mood after 'recommended that'. The base form of the verb ('be') is used.",
+                type: "Grammar"
+            }
+            // Placeholder to add more questions to reach 50.
+            /*
+            Example structure for additional questions:
+            {
+                question: "Your question text here...",
+                choices: ["Option A", "Option B", "Option C", "Option D"],
+                correctAnswer: "Correct Option",
+                explanation: "Optional explanation here.",
+                type: "Vocabulary" // or "Grammar"
+            },
+            */
+        ];
+
+        // --- DOM Elements ---
+        // References to HTML elements used by the quiz.
+        const questionArea = document.getElementById('question-area');
+        const questionTextElement = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const submitButton = document.getElementById('submit-button');
+        const resultsArea = document.getElementById('results-area');
+        const scorePercentageElement = document.getElementById('score-percentage');
+        const scoreDetailsElement = document.getElementById('score-details');
+        const detailedFeedbackContainer = document.getElementById('detailed-feedback');
+        const restartButton = document.getElementById('restart-button');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const messageModal = document.getElementById('message-modal');
+        const modalText = document.getElementById('modal-text');
+        const modalCloseButton = document.getElementById('modal-close');
+
+
+        // --- Quiz State ---
+        // Variables to keep track of the current question and user's answers.
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+
+        // --- Functions ---
+
+        // Displays a message in a modal dialog.
+        function showModal(message) {
+            modalText.textContent = message;
+            messageModal.style.display = "block";
+        }
+
+        // Hides the modal dialog.
+        modalCloseButton.onclick = function() {
+            messageModal.style.display = "none";
+        }
+        // Also hides the modal if the user clicks outside of the modal content.
+        window.onclick = function(event) {
+            if (event.target == messageModal) {
+                messageModal.style.display = "none";
+            }
+        }
+
+        // Loads and displays the current question and its choices.
+        function loadQuestion() {
+            if (currentQuestionIndex < 0 || currentQuestionIndex >= questions.length) {
+                console.error("Invalid question index: ", currentQuestionIndex);
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionTextElement.textContent = currentQuestion.question;
+            choicesContainer.innerHTML = ''; // Clear previous choices before loading new ones.
+
+            currentQuestion.choices.forEach((choice, index) => {
+                const choiceId = `choice-${currentQuestionIndex}-${index}`;
+                const choiceElement = document.createElement('div');
+                choiceElement.classList.add('p-3', 'border-2', 'border-gray-600', 'text-gray-300', 'rounded-lg', 'cursor-pointer', 'hover:bg-gray-700', 'hover:text-white', 'transition', 'duration-150', 'choice-label');
+
+                const radioInput = document.createElement('input');
+                radioInput.type = 'radio';
+                radioInput.name = `question-${currentQuestionIndex}`;
+                radioInput.id = choiceId;
+                radioInput.value = choice;
+                radioInput.classList.add('mr-3', 'accent-indigo-500');
+
+                const label = document.createElement('label');
+                label.htmlFor = choiceId;
+                label.textContent = choice;
+                label.classList.add('w-full', 'cursor-pointer');
+
+                choiceElement.appendChild(radioInput);
+                choiceElement.appendChild(label);
+                choicesContainer.appendChild(choiceElement);
+
+                // If an answer was previously selected for this question, mark it.
+                if (userAnswers[currentQuestionIndex] === choice) {
+                    radioInput.checked = true;
+                    choiceElement.classList.add('selected-choice');
+                }
+
+                // Event listener for selecting an answer.
+                choiceElement.addEventListener('click', () => {
+                    document.querySelectorAll(`#choices-container .choice-label`).forEach(el => el.classList.remove('selected-choice'));
+                    choiceElement.classList.add('selected-choice');
+                    radioInput.checked = true;
+                    userAnswers[currentQuestionIndex] = choice;
+                });
+            });
+
+            updateNavigationButtons();
+            updateProgressIndicator();
+        }
+
+        // Updates the state (enabled/disabled, visible/hidden) of navigation buttons.
+        function updateNavigationButtons() {
+            prevButton.disabled = currentQuestionIndex === 0;
+            if (currentQuestionIndex === questions.length - 1) {
+                nextButton.classList.add('hidden');
+                submitButton.classList.remove('hidden');
+            } else {
+                nextButton.classList.remove('hidden');
+                submitButton.classList.add('hidden');
+            }
+        }
+
+        // Updates the text showing current question number and total questions.
+        function updateProgressIndicator() {
+            progressIndicator.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        }
+
+        // Handles the "Next" button click to move to the next question.
+        function handleNext() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        // Handles the "Previous" button click to move to the previous question.
+        function handlePrevious() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // Calculates the score and displays the results screen.
+        function showResults() {
+            questionArea.classList.add('hidden');
+            document.getElementById('navigation-area').classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            progressIndicator.classList.add('hidden');
+
+            let score = 0;
+            detailedFeedbackContainer.innerHTML = ''; // Clear previous feedback.
+
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const correctAnswer = question.correctAnswer;
+                const isCorrect = userAnswer === correctAnswer;
+                if (isCorrect) {
+                    score++;
+                }
+
+                // Create and append feedback for each question.
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('p-4', 'rounded-lg', 'border-l-4', 'mb-3', 'bg-gray-700');
+
+                let choicesHTML = question.choices.map(choice => {
+                    let choiceClass = 'block p-2 my-1 rounded-md text-gray-300';
+                    if (choice === correctAnswer) {
+                        choiceClass += ' bg-green-700 text-green-100 font-semibold';
+                    }
+                    if (choice === userAnswer && !isCorrect) {
+                        choiceClass += ' bg-red-700 text-red-100 line-through';
+                    } else if (choice === userAnswer && isCorrect) {
+                         choiceClass += ' border-2 border-green-500';
+                    }
+                    return `<span class="${choiceClass}">${choice}</span>`;
+                }).join('');
+
+                feedbackElement.innerHTML = `
+                    <p class="font-semibold text-md text-gray-100 mb-1">${index + 1}. ${question.question}</p>
+                    <div class="text-sm space-y-1">${choicesHTML}</div>
+                    ${!isCorrect && userAnswer !== null ? `<p class="mt-1 text-sm text-red-400">Your answer: ${userAnswer}</p>` : ''}
+                    ${userAnswer === null ? `<p class="mt-1 text-sm text-yellow-400">You did not answer this question.</p>` : ''}
+                    <p class="mt-1 text-sm ${isCorrect ? 'text-green-400 font-bold' : 'text-green-400'}">Correct answer: ${correctAnswer}</p>
+                    ${question.explanation ? `<p class="mt-1 text-xs text-gray-400"><em>Explanation: ${question.explanation}</em></p>` : ''}
+                `;
+
+                if (isCorrect) {
+                    feedbackElement.classList.add('correct-answer', 'border-green-500');
+                } else {
+                    feedbackElement.classList.add('incorrect-answer', 'border-red-500');
+                }
+
+                detailedFeedbackContainer.appendChild(feedbackElement);
+            });
+
+            const percentage = questions.length > 0 ? (score / questions.length) * 100 : 0;
+            scorePercentageElement.textContent = `${percentage.toFixed(1)}%`;
+            scoreDetailsElement.textContent = `You got ${score} out of ${questions.length} questions correct.`;
+        }
+
+        // Resets the quiz state and loads the first question.
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = new Array(questions.length).fill(null);
+            resultsArea.classList.add('hidden');
+            questionArea.classList.remove('hidden');
+            document.getElementById('navigation-area').classList.remove('hidden');
+            progressIndicator.classList.remove('hidden');
+            submitButton.classList.add('hidden');
+            nextButton.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // --- Event Listeners ---
+        // Assigns functions to button click events.
+        nextButton.addEventListener('click', handleNext);
+        prevButton.addEventListener('click', handlePrevious);
+        submitButton.addEventListener('click', showResults);
+        restartButton.addEventListener('click', restartQuiz);
+
+        // --- Initial Load ---
+        // Ensures the userAnswers array is correctly sized.
+        if (userAnswers.length !== questions.length) {
+            userAnswers = new Array(questions.length).fill(null);
+        }
+        loadQuestion(); // Load the first question when the page is ready.
+
+    </script>
+</body>
+</html>
